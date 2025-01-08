@@ -113,5 +113,17 @@ where dea.continent is not null
 select continent, location, date, population, RollingVaccineCount,
  ((RollingVaccineCount)/population)*100 as PercentPopulationVaccinated
 from vaccinerate
---group by continent,location,date, population, RollingVaccineCount
 order by location, date
+
+create view PopulationVaccinated as
+select dea.continent,dea.location, dea.date, dea.population, vac.new_vaccinations,
+ sum(convert(bigint,new_vaccinations)) 
+ over (partition by dea.location order by dea.location, dea.date) 
+ as RollingVaccineCount
+from PortfolioProject..Coviddeaths dea
+ join PortfolioProject..Covidvaccines vac on dea.location = vac.location and dea.date = vac.date
+where dea.continent is not null
+
+select * from PopulationVaccinated
+
+
